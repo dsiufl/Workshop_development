@@ -1,0 +1,247 @@
+---
+title: "R1"
+author: "Tyler Richards"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+---
+
+#General Programming Concepts in R 
+
+The point of this workshop is to give you tools for analytics. It will cover tidying,  visualization, and some methods to make working in data much easier. 
+The goal is never to memorize how exactly these functions work, but to have enough exposure to understand where to go. 
+
+This will cover if statements and conditionals, looping variables in R, and then loading and cleaning data with dplyr
+
+
+###Which
+'Which' returns boolean values and can be used to subset dataframes
+```{r}
+
+z <- -3:2
+which(z > 0) ##This finds the index values of the vector that satisfy the condition
+z[which(z > 0)]
+
+
+any(z < 1)
+all(z >= -3)
+all(z == 1)
+
+```
+
+###If/Else Statements
+
+if statements execute a chunk of code if a condition is met with a TRUE value
+
+```{r}
+
+x=1
+if(x > 0){
+  print('Cool')
+}
+
+```
+
+Another example
+
+```{r}
+UT=21
+UF=47
+if(UT>UF){
+  print('Woo Hoo')
+}
+```
+In this case, nothing gets printed. However, if we change the symbol direction we'll see that it gets printed
+
+```{r}
+UT=21
+UF=47
+if(UF<UT){
+  print('We lost')
+} else{
+  print('We Won')
+}
+```
+
+We can also use 'else if'
+
+```{r}
+grade=75
+if(grade>=95){
+  print('Excellent!')
+}else if (grade>=85){
+  print("Pretty good")
+} else {
+  print("RIP")
+  
+}
+```
+
+
+###Looping
+
+Looping is an easy way to cylce through iterative procedures. The common expressions used in R loops are `for` and `while` loops. In addtition, there are two clauses `break` and `next`.   
+
+####For Loops  
+These loops are used when you want to iterate a known number of times.   
+
+```{r}
+for (i in 1:10){
+  print (i)
+}
+```
+
+Let's make a for loop for 
+```{r}
+ID <- 1:100
+grade <- rnorm(100, 80, 5)
+#hist(grade)
+comment <- 1:100
+for(i in 1:100){
+  if(grade[i]>=85){
+    #print('Excellent!')
+    comment[i] <- 'excellent'
+  }else if (grade[i]>=78){
+    #print("Pretty good")
+    comment[i] <- 'pretty good'
+  } else {
+    #print("You are stupid")
+    comment[i] <- 'rip'
+    
+  }
+}
+
+report <- data.frame(ID, grade, comment)
+head(report)
+```
+
+  
+###Apply Functions
+The apply() family pertains to the R base package and is populated with functions to manipulate slices of data from matrices, arrays, lists and dataframes in a repetitive way. These functions allow crossing the data in a number of ways and avoid explicit use of loop constructs. They act on an input list, matrix or array and apply a named function with one or several optional arguments.
+
+The apply() functions form the basis of more complex combinations and helps to perform operations with very few lines of code. More specifically, the family is made up of the apply(), lapply() , sapply(), vapply(), mapply(), rapply(), and tapply() functions.
+
+--This description of the apply() family comes from datacamp.com
+--https://www.datacamp.com/community/tutorials/r-tutorial-apply-family#gs.jtEYin0
+
+####apply  
+We use the ``apply()`` function to iterate over a matrix or array
+```{r}
+##create random matrix (big_matrix might still be around from before)
+big_matrix <- matrix(1:20, ncol = 5, nrow = 4)
+row_mean <- apply(big_matrix, 1, mean)
+col_mean <- apply(big_matrix, 2, mean)
+
+print(big_matrix)
+print(row_mean)
+print(col_mean)
+```
+
+
+###While Loops
+
+while loops execute a chunk of code within their scope, while some logical conditions is satisfied.
+
+These loops have the potential to run infinitely if the condition remains true indefinitely. 
+
+```{r}
+i=0
+while(i<5){#very similar to for loop
+  i=i+1
+  print(i)
+}
+```
+
+
+##Dplyr 
+
+when you get new data, about 0% of the time it will be in the right format and immediately useful for modeling or analysis.
+Dplyr is the grammar of data manipulation. Let's check out how it works. 
+
+
+```{r}
+#install.packages(c("datasets", "dplyr"))
+library(datasets)
+library(dplyr)
+```
+
+```{r}
+head(airquality)
+```
+Dplyr runs off of a series of verbs. We'll go through a few now. 
+
+```{r}
+airquality %>% 
+    filter(Month != 5) %>% 
+    group_by(Month) %>% 
+    summarise(my_mean = mean(Temp, na.rm = TRUE)) 
+
+airquality %>% 
+    filter(Month != 5) %>% 
+    group_by(Month) %>% 
+    summarise(my_mean = mean(Temp, na.rm = TRUE), count_days_in_month = n()) 
+
+airquality %>% 
+    filter(Month != 5) %>% 
+    group_by(Month) %>% 
+    summarise(my_mean = mean(Temp, na.rm = TRUE), count_days_in_month = n()) %>% 
+    select(1)
+
+airquality %>% 
+    filter(Month != 5) %>% 
+    group_by(Month) %>% 
+    summarise(my_mean = mean(Temp, na.rm = TRUE), count_days_in_month = n()) %>% 
+    select(-1)
+airquality %>% 
+    filter(Month != 5) %>% 
+    group_by(Month) %>% 
+    summarise(my_mean = mean(Temp, na.rm = TRUE), count_days_in_month = n()) %>% 
+    select(1:3)
+airquality %>% 
+    filter(Month != 5) %>% 
+    group_by(Month) %>% 
+    summarise(my_mean = mean(Temp, na.rm = TRUE), count_days_in_month = n()) %>% 
+    select(my_mean)
+```
+```{r}
+install.packages("reshape2")
+library(reshape2)
+melt(airquality, id.vars = c("Day", "Month"))
+```
+
+```{r}
+airquality
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(airquality)
+ggplot(airquality, aes(Ozone, Temp))
+ggplot(airquality, aes(Ozone, Temp)) + geom_point()
+ggplot(airquality, aes(Ozone, Temp)) + geom_point(color = "red")
+ggplot(airquality, aes(Ozone, Temp, color = Temp)) + geom_point()
+ggplot(airquality, aes(Ozone, Temp, color = Temp)) + geom_point() + geom_smooth()
+#loess is non parametric, local polynomial regressor 
+ggplot(airquality, aes(Ozone, Temp, color = Month)) + geom_point() #viewing month as continuous, need to type cast
+ggplot(airquality, aes(Ozone, Temp, color = as.factor(Month))) + geom_point()
+ggplot(airquality, aes(Ozone, Temp, color = as.factor(Month))) + geom_point() + facet_grid(. ~ Month)
+ggplot(airquality, aes(Ozone, Temp, color = as.factor(Month))) + geom_point() + facet_grid(. ~ Month) + geom_smooth(method = "lm")
+```
+
+```{r}
+library(devtools)
+install_github("thomasp85/gganimate")
+library(gganimate)
+
+ggplot(airquality, aes(Ozone, Temp, color = as.factor(Month))) + 
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  transition_states(Month, transition_length = 3, state_length = 1) +
+  enter_fade() + 
+  exit_shrink()
+
+```
+
+
